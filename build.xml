@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="keva" basedir="." default="all">
+  <!-- JAR name -->
+  <property name="build.jar" value="keva.jar"/>
+
+  <!-- Global properties for this build -->
+  <property environment="env" />
+  <property name="keva.dir" value="${env.KEVA_HOME}"/>  
+  <property name="src.dir" value="src" />
+  <property name="build.dir" value="classes"/>
+  <property name="doc.dir"   value="doc"/>
+
+  <!-- Common libs class path -->
+  <property name="libs.dir"           value="${keva.dir}/libs"/>
+  <property name="msgpack.dir"        value="${keva.dir}/libs/msgpack"/>
+
+  <!-- Classpath -->
+  <path id="classpath">
+    <fileset dir="${libs.dir}">
+      <include name="*.jar" />
+    </fileset>
+
+    <fileset dir="${msgpack.dir}">
+      <include name="*.jar" />
+    </fileset>
+
+  </path>
+
+  <!-- Use this to compile and create jar file -->
+  <target name="all"
+	  depends="compile,jar">
+  </target>
+
+  <!-- Actual build target -->
+  <target name="compile">
+    <mkdir dir="${build.dir}"/>
+    <javac srcdir="${src.dir}" 
+	   destdir="${build.dir}" 
+	   classpathref="classpath" 
+	   includeantruntime="false" 
+	   debug="on" 
+	   debuglevel="lines,vars,source">
+
+      <compilerarg value="-Xlint:unchecked" />
+    </javac>
+  </target>
+
+  <!-- Create a JAR file for distribution. -->
+  <target name="jar">
+    <jar destfile="${build.jar}"
+         index="true" filesetmanifest="mergewithoutmain">
+      <fileset dir="${build.dir}" />
+    </jar>
+  </target>
+
+  <!-- Package all the dependencies -->
+  <target name="deps">
+    <zip destfile="dependencies.jar">
+      <zipgroupfileset dir="${libs.dir}" includes="*.jar"/>
+      <zipgroupfileset dir="${msgpack.dir}" includes="*.jar"/>
+    </zip>
+  </target>
+
+  <!-- Generate the documentation -->
+  <target name="doc">
+    <mkdir dir="${doc.dir}"/>
+    <javadoc 
+	packagenames="gov.ornl.keva.*"
+	sourcepath="${src.dir}" 
+	destdir="${doc.dir}" 
+	defaultexcludes="yes"
+	author="true"
+	version="true"
+	classpathref="classpath">
+    </javadoc>
+  </target>
+
+</project>

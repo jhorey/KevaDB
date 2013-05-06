@@ -1,0 +1,105 @@
+# KevaDB
+This is a stand-alone key-value store similar in spirit to Google's LevelDB. Like LevelDB, Keva
+features a simple API to store and retrieve arbitrary key-value pairs and safely persists all
+data to disk. Also, it is intended to be used as a library within the context of another application. 
+However, there are a few differences with LevelDB that are worth noting:
+
+* Keva is implemented in Java and heavily utilizes the concurrent and nio libraries
+* Keva supports the idea of different "branches" associated with a particular key
+* All values within a branch are appended into a history (there are no in-place updates)
+
+It is simple enough to use Keva as a simple key-value store, but these additional features also
+enable interesting use-cases. For example, the ability to keep sorted groups of "lists". This is
+especially handy when using Keva for something similar to Hadoop's "emit" capabilities. 
+
+# Design 
+The design of Keva follows the BigTable, Cassandra, LevelDB, etc. pretty closely. Values are first
+placed in an in-memory "memtable". Values are concurrently written to a write-ahead log to ensure
+durability. After the memtable reaches a specified size, it is flushed onto disk as an "sstable". 
+Values are sorted by key and insertion order. 
+
+# API & Usage
+The first thing to do is open a database. 
+
+    try {
+    	factory = new KevaDBFactory(dbConfig);
+	keva = factory.open(db, openOptions);
+    } catch(KevaDBException e) {
+	e.printStackTrace();
+    }
+
+The user can pass in various options. For example, to throw an error if the database already exists or
+to delete an existing database with the same name.
+
+   OpenOptions openOptions = new OpenOptions();
+   openOptions.deleteIfExists = true;
+   openOptions.errorIfExists = false;
+
+After opening the database, users can place new items into the database. 
+
+   TableKey tk = TableKeyFactory.fromString("key");
+   TableValue tv = TableValueFactory.fromString("value");
+   keva.put(tk, tv, writeOptions);
+
+The user must specify a primary key, but can also specify a secondary "branch" (which is always a string). 
+The branch is specified in the WriteOptions. 
+
+Keva also supports delete operations. However, unlike a database that overwrites existing values, all updates
+are appended to the same (key,branch) set. This is also true for delete operations. That means you don't
+really remove values. So how do you actually remove values? You can tell the system to "prune" deleted values
+when the values are flushed from memory onto disk. This is done in the database configuration file. 
+
+  <property>
+     <name>keva.prune.delete</name>
+     <value>true</value>
+  </property>
+
+  <property>
+     <name>keva.prune.history</name>
+     <value>7</value>
+  </property>
+
+Keva also supports batch writes. First you create a batch collection.
+
+  WriteBatch batch = new WriteBatch();
+  batch.addWrite(TableKeyFactory.fromString("key"),
+		 TableValueFactory.fromString("value"),
+		 writeOptions);
+  keva.put(batch);
+
+The put operation may fail if all the writes in the batch cannot be committed atomically.  
+
+Because Keva stores a history of values, the user has the option of reading the latest value or
+requesting the entire history of a value.
+
+  Iterator<TableValue> valueIter = keva.get(key, branch);
+  Map<String, StreamIterator<TableValue>> values = keva.getHistory(key);
+
+Right now you can only request the entire history associated with the primary key. When you do so,
+you receive a map of branches to value iterators. You can also retrieve data associated with a primary
+key at a specific instance in time. At the moment, this returns all branches associated with the
+primary key. 
+
+  Map<String, StreamIterator<TableValue>> values = keva.get(key, time);
+
+There are also multi key versions of these read operations to simplify reading many keys at once. 
+
+Finally, you can iterate over the keys (sorted by user-defined comparison method). 
+
+  Iterator<TableKey> iter = keva.iterator();
+
+I intend on adding a way to iterate over both the key and value (with a "time" option) in the near future. 
+
+# Getting Started
+The easiest way is to explore the "examples" directory for some simple applications. We currently have a
+functional word count and reverse index application along with other more demo-style applications. 
+
+# Current Status
+Keva is an active state of development and currently undergoing various testing. I hope to improve performance
+and accomodate new features in the coming months. However, the database should still be usable even at this stage,
+so please share any results you find!
+
+# Copyright and License
+This code was originally developed by James Horey while an employee at Oak Ridge National Lab. Consequently
+the copyright belongs to Oak Ridge National Laboratory. The code is released under an 
+Apache 2.0 license. If you do use this application, please let me know and share your experiences. 

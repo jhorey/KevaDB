@@ -1,0 +1,42 @@
+<configuration>
+
+<property>
+  <name>keva.data.dir</name>
+  <value>data/data</value>
+</property>
+
+<property>
+  <name>keva.wal.dir</name>
+  <value>data/wal</value>
+</property>
+
+
+<property>
+  <name>keva.prune.delete</name>
+  <value>true</value>
+</property>
+
+
+<property>
+  <name>keva.prune.history</name>
+  <value>1000000</value>
+</property>
+
+<property>
+  <name>keva.sort</name>
+  <value>
+    gov.ornl.keva.comparators.AlphaNumComparator
+  </value>
+</property>
+
+<!-- <property> -->
+<!--   <name>keva.memtable.threshold</name> -->
+<!--   <value>1000000</value> -->
+<!-- </property> -->
+
+<!-- <property> -->
+<!--   <name>keva.sstable.impl</name> -->
+<!--   <value>gov.ornl.keva.sstable.DefaultSSTable</value> -->
+<!-- </property> -->
+
+</configuration>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="keva.examples" basedir="." default="all">
+  <!-- JAR name -->
+  <property name="build.jar" value="kevaexamples.jar"/>
+
+  <!-- Global properties for this build -->
+  <property environment="env" />
+  <property name="keva.dir" value="${env.KEVA_HOME}"/>  
+  <property name="src.dir" value="."/>
+  <property name="build.dir" value="classes"/>
+
+  <!-- Common libs class path -->
+  <!-- Classpath -->
+  <path id="classpath">
+    <fileset dir="${keva.dir}">
+      <include name="keva.jar" />
+      <include name="dependencies.jar" />
+    </fileset>
+  </path>
+
+  <!-- Use this to compile and create jar file -->
+  <target name="all"
+	  depends="compile,jar">
+  </target>
+
+  <!-- Actual build target -->
+  <target name="compile">
+    <mkdir dir="${build.dir}"/>
+    <javac srcdir="${src.dir}" 
+	   destdir="${build.dir}" 
+	   classpathref="classpath" 
+	   includeantruntime="false" 
+	   debug="on" 
+	   debuglevel="lines,vars,source">
+
+      <compilerarg value="-Xlint:unchecked" />
+    </javac>
+  </target>
+
+  <!-- Create a JAR file for distribution. -->
+  <target name="jar">
+    <jar destfile="${build.jar}"
+         index="true" filesetmanifest="mergewithoutmain">
+      <fileset dir="${build.dir}" />
+    </jar>
+  </target>
+
+
+  <target name="wordcount">
+    <java fork="true" classname="gov.ornl.keva.examples.wordcount.WordCount">
+      <classpath>
+	<path refid="classpath" />
+	<path location="${build.jar}" />
+      </classpath>
+      <arg value="config/kevanode.xml" />
+      <arg value="${input}" />
+      <sysproperty key="java.util.logging.config.file" value="${log.file}" />
+    </java>
+  </target>
+
+  <target name="index">
+    <java fork="true" classname="gov.ornl.keva.examples.index.ReverseIndex">
+      <classpath>
+	<path refid="classpath" />
+	<path location="${build.jar}" />
+      </classpath>
+      <arg value="config/kevanode.xml" />
+      <arg value="${input}" />
+      <sysproperty key="java.util.logging.config.file" value="${log.file}" />
+    </java>
+  </target>
+
+  <target name="sensor">
+    <java fork="true" classname="gov.ornl.keva.examples.sensor.SensorCollect">
+      <classpath>
+	<path refid="classpath" />
+	<path location="${build.jar}" />
+      </classpath>
+      <arg value="config/kevanode.xml" />
+      <sysproperty key="java.util.logging.config.file" value="${log.file}" />
+    </java>
+  </target>
+
+  <target name="database">
+    <java fork="true" classname="gov.ornl.keva.examples.database.Database">
+      <classpath>
+	<path refid="classpath" />
+	<path location="${build.jar}" />
+      </classpath>
+      <arg value="config/kevanode.xml" />
+      <arg value="${input}" />
+      <arg value="${cmd}" />
+      <sysproperty key="java.util.logging.config.file" value="${log.file}" />
+      <jvmarg value="-Xms512m" />
+      <jvmarg value="-Xmx2048m" />
+      <jvmarg value="-XX:+UseConcMarkSweepGC" />
+      <jvmarg value="-XX:+ExplicitGCInvokesConcurrent" />
+    </java>
+  </target>
+
+</project>
