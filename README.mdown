@@ -21,25 +21,31 @@ Values are sorted by key and insertion order.
 # API & Usage
 The first thing to do is open a database. 
 
-    try {
-    	factory = new KevaDBFactory(dbConfig);
-	keva = factory.open(db, openOptions);
-    } catch(KevaDBException e) {
-	e.printStackTrace();
-    }
+~~~
+try {
+    factory = new KevaDBFactory(dbConfig);
+    keva = factory.open(db, openOptions);
+} catch(KevaDBException e) {
+  e.printStackTrace();
+}
+~~~
 
 The user can pass in various options. For example, to throw an error if the database already exists or
 to delete an existing database with the same name.
 
-   OpenOptions openOptions = new OpenOptions();
-   openOptions.deleteIfExists = true;
-   openOptions.errorIfExists = false;
+~~~
+OpenOptions openOptions = new OpenOptions();
+openOptions.deleteIfExists = true;
+openOptions.errorIfExists = false;
+~~~
 
 After opening the database, users can place new items into the database. 
 
-   TableKey tk = TableKeyFactory.fromString("key");
-   TableValue tv = TableValueFactory.fromString("value");
-   keva.put(tk, tv, writeOptions);
+~~~
+TableKey tk = TableKeyFactory.fromString("key");
+TableValue tv = TableValueFactory.fromString("value");
+keva.put(tk, tv, writeOptions);
+~~~
 
 The user must specify a primary key, but can also specify a secondary "branch" (which is always a string). 
 The branch is specified in the WriteOptions. 
@@ -49,44 +55,54 @@ are appended to the same (key,branch) set. This is also true for delete operatio
 really remove values. So how do you actually remove values? You can tell the system to "prune" deleted values
 when the values are flushed from memory onto disk. This is done in the database configuration file. 
 
-  <property>
-     <name>keva.prune.delete</name>
-     <value>true</value>
-  </property>
+~~~
+<property>
+    <name>keva.prune.delete</name>
+    <value>true</value>
+</property>
 
-  <property>
-     <name>keva.prune.history</name>
-     <value>7</value>
-  </property>
+<property>
+    <name>keva.prune.history</name>
+    <value>7</value>
+</property>
+~~~
 
 Keva also supports batch writes. First you create a batch collection.
 
-  WriteBatch batch = new WriteBatch();
-  batch.addWrite(TableKeyFactory.fromString("key"),
-		 TableValueFactory.fromString("value"),
-		 writeOptions);
-  keva.put(batch);
+~~~
+WriteBatch batch = new WriteBatch();
+batch.addWrite(TableKeyFactory.fromString("key"),
+	       TableValueFactory.fromString("value"),
+	       writeOptions);
+keva.put(batch);
+~~~
 
 The put operation may fail if all the writes in the batch cannot be committed atomically.  
 
 Because Keva stores a history of values, the user has the option of reading the latest value or
 requesting the entire history of a value.
 
-  Iterator<TableValue> valueIter = keva.get(key, branch);
-  Map<String, StreamIterator<TableValue>> values = keva.getHistory(key);
+~~~
+Iterator<TableValue> valueIter = keva.get(key, branch);
+Map<String, StreamIterator<TableValue>> values = keva.getHistory(key);
+~~~
 
 Right now you can only request the entire history associated with the primary key. When you do so,
 you receive a map of branches to value iterators. You can also retrieve data associated with a primary
 key at a specific instance in time. At the moment, this returns all branches associated with the
 primary key. 
 
-  Map<String, StreamIterator<TableValue>> values = keva.get(key, time);
+~~~
+Map<String, StreamIterator<TableValue>> values = keva.get(key, time);
+~~~
 
 There are also multi key versions of these read operations to simplify reading many keys at once. 
 
 Finally, you can iterate over the keys (sorted by user-defined comparison method). 
 
-  Iterator<TableKey> iter = keva.iterator();
+~~~
+Iterator<TableKey> iter = keva.iterator();
+~~~
 
 I intend on adding a way to iterate over both the key and value (with a "time" option) in the near future. 
 
