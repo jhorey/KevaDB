@@ -1,8 +1,8 @@
 # KevaDB
-This is a stand-alone key-value store similar in spirit to Google's LevelDB. Like LevelDB, Keva
-features a simple API to store and retrieve arbitrary key-value pairs and safely persists all
-data to disk. Also, it is intended to be used as a library within the context of another application. 
-However, there are a few differences with LevelDB that are worth noting:
+Keva is an integrated key-value store similar in spirit to Google's LevelDB. Like LevelDB,
+it is intended to be used as a library within the context of another application. Keva
+features a simple API for applications to store and retrieve arbitrary key-value pairs and safely persists all
+data to disk. Unlike other key-value stores, Keva has some additional features worth noting:
 
 * Keva is implemented in Java and heavily utilizes the concurrent and nio libraries
 * Keva supports the idea of different "branches" associated with a particular key
